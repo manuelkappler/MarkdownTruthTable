@@ -1,7 +1,6 @@
 require './TruthTable'
 require './Logic'
 
-<<<<<<< HEAD
 tt = TruthTable.new(ARGV[0].to_i)
 
 a = tt.variables[0]
@@ -29,6 +28,5 @@ wff6 = WFF.new(wff5, disj, b)
 tt.add_wff(wff6)
 tt.print_to_console
 puts tt.are_equivalent? wff6, wff4
-=======
+
 TruthTable.new(ARGV[0].to_i)
->>>>>>> 59a861960fed60965bc86bdc8f9a25b125402071
