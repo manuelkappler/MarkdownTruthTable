@@ -9,14 +9,14 @@ class TruthTable
 
   # Should be a hash-like structure that has the Atoms as keys and the truth values as value
 
+  attr_accessor(:variables)
+
   def initialize(n_variables, variable_names=CAPITAL_ALPHA)
 
     @n = n_variables
     @variables = create_variable_array(@n, variable_names)
-    puts @variables
+    # puts @variables
     @tt = create_initial_hash(@variables)
-    print_to_console @tt
-
   end
 
   def create_variable_array(n, names)
@@ -32,7 +32,11 @@ class TruthTable
   # Adds a Well-Formed Formula to the table
   # WFFs are given in the format: [atom, connective, atom] where atom is either a variable or another wff
   def add_wff wff
-
+    if wff.is_unary?
+      @tt[wff] = @tt[wff.atom1].map{|x| wff.eval x}
+    else
+      @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
+    end
   end
 
   def get_row tt, row
@@ -41,12 +45,12 @@ class TruthTable
 
   # Printing etc.
    
-  def print_to_console tt
-    tt.keys.each{|v| print "#{v.to_s}\t"}
+  def print_to_console
+    @tt.keys.each{|v| print "#{v.to_s}"; print "\t" * (2 - v.to_s.length / 7)}
     puts "\n"
-    puts "———————" * tt.keys.length
-    0.upto(tt.values[0].length - 1) do |row_index|
-      get_row(tt, row_index).each{|x| print "#{x}\t"}
+    puts "—————\t\t" * @tt.keys.length
+    0.upto(@tt.values[0].length - 1) do |row_index|
+      get_row(@tt, row_index).each{|x| print "#{x}\t\t"}
       print "\n"
     end
   end
@@ -55,9 +59,12 @@ class TruthTable
 
   end
 
+  def are_equivalent? wff1, wff2
+    begin
+      return @tt[wff1] == @tt[wff2]
+    rescue
+      raise KeyError
+    end
+  end
 
 end
-
-puts ARGV
-t = TruthTable.new(ARGV[0].to_i)
-puts t
