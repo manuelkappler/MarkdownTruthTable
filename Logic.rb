@@ -18,15 +18,14 @@ end
 
 class WFF < Atom
 
+  attr_reader(:atom1, :atom2)
+
   def initialize(*args)
     if args.size == 2
-      puts args
-      puts args.size
       raise TypeError unless (args[1].is_a? UnaryConnective and args[0].is_a? Atom)
       @atom1 = args[0]
       @connective = args[1]
     elsif args.size == 3
-      puts args.size
       raise TypeError unless args[0].is_a? Atom and args[2].is_a? Atom and args[1].is_a? Connective
       @atom1 = args[0]
       @connective = args[1]
@@ -36,21 +35,38 @@ class WFF < Atom
     end
   end
 
+  def is_unary?
+    return @atom2.nil?
+  end
+
   def to_s
-    if @atom2.nil?
-      return "#{@connective.to_s}#{@atom1.to_s}"
+    if @atom1.is_a? Variable
+      a1 = @atom1.to_s
     else
-      return "#{@atom1.to_s}#{@connective.to_s}#{@atom2.to_s}"
+      a1 = "(#{@atom1.to_s})"
+    end
+    if is_unary?
+      return "#{@connective.to_s}#{a1}"
+    else
+      if @atom2.is_a? Variable
+        a2 = @atom2.to_s
+      else
+        a2 = "(#{@atom2.to_s})"
+      end
+      return "#{a1}#{@connective.to_s}#{a2}"
     end
   end
 
-  def eval t1, t2
-    if @atom2.nil?
+  def eval(t1, t2=nil)
+    if t2.nil? and @atom2.nil?
       return @connective.eval t1
+    elsif (t2.nil? and not @atom2.nil?) or (@atom2.nil? and not t2.nil?)
+      raise ArgumentError
     else
       return @connective.eval t1, t2
     end
   end
+
 end
 
 class And < Connective
@@ -126,7 +142,7 @@ end
 class UnaryConnective < Connective
 end
 
-class Negation < UnaryConnective
+class Not < UnaryConnective
   def initialize
     @symbol = "¬"
   end
