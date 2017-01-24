@@ -54,6 +54,7 @@ class TruthTable
       add_wff(wff.atom1)
       @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
     elsif wff.atom2.is_a? WFF
+      add_wff(wff.atom2)
       @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
     else
       @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
