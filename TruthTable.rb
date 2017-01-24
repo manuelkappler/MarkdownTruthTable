@@ -43,16 +43,17 @@ class TruthTable
   # WFFs are given in the format: [atom, connective, atom] where atom is either a variable or another wff
   def add_wff wff
     if wff.is_unary?
+      if wff.atom1.is_a? WFF
+        add_wff(wff.atom1)
+      end
       @tt[wff] = @tt[wff.atom1].map{|x| wff.eval x}
     elsif wff.atom1.is_a? WFF and wff.atom2.is_a? WFF
-      add_wff(wff.atom1)
       add_wff(wff.atom2)
       @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
     elsif wff.atom1.is_a? WFF
       add_wff(wff.atom1)
       @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
     elsif wff.atom2.is_a? WFF
-      add_wff(wff.atom2)
       @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
     else
       @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
