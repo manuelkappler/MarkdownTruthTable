@@ -6,14 +6,6 @@ require './TruthTable'
  
 # This code implements a shunting yard algorithm for parsing. See for example: www.engr.mun.ca/~theo/Misc/exp_parsing.htm and en.wikipedia.org/wiki/Shunting-yard-algorithm
  
-class Stack < Array
-
-  def add el1
-
-  end
-
-end
-
 def parse_string string
   variables = {}
   operators = {"not" => Not.new(), "or" => Or.new(), "and" => And.new(), "->" => If.new(), "<->" => Iff.new(), "(" => LeftParen.new()}
@@ -60,7 +52,7 @@ def parse_string string
 
 #  print "\n" + output_queue.map{|x| x.to_s}.join("\t") + "\n"
 
-  return output_queue.get_wff
+  return variables, output_queue.get_wff
 
 end
 
@@ -85,5 +77,3 @@ end
 
 class MismatchedParenthesis < StandardError
 end
-
-puts parse_string(ARGV[0])
