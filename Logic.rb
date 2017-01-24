@@ -5,8 +5,22 @@ class Atom
 end
 
 class Connective
+  include Comparable
+
+  attr_reader(:precedence)
+
   def to_s
     return @symbol
+  end
+
+  def <=>(other_connective)
+    if self.precedence < other_connective.precedence
+      return 1
+    elsif self.precedence > other_connective.precedence
+      return -1
+    else
+      return 0
+    end
   end
 end
 
@@ -71,6 +85,7 @@ end
 
 class And < Connective
   def initialize
+    @precedence = 2
     @symbol = "∧"
   end
 
@@ -85,6 +100,7 @@ end
 
 class Or < Connective
   def initialize
+    @precedence = 3
     @symbol = "∨"
   end
 
@@ -101,6 +117,7 @@ end
 
 class If < Connective
   def initialize
+    @precedence = 4
     @symbol = "→"
   end
 
@@ -119,6 +136,7 @@ end
 
 class Iff < Connective
   def initialize
+    @precedence = 5
     @symbol = "↔"
   end
 
@@ -145,6 +163,7 @@ end
 class Not < UnaryConnective
   def initialize
     @symbol = "¬"
+    @precedence = 1
   end
 
   def eval t1
@@ -153,5 +172,12 @@ class Not < UnaryConnective
     else
       return true
     end
+  end
+end
+
+# Dummy connective for parsing
+class Sentinel < Connective
+  def initialize
+    @precedence = 10
   end
 end
