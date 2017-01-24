@@ -1,5 +1,5 @@
-require 'matrix'
 require './Logic'
+require 'colorize'
 
 CAPITAL_ALPHA = (1..26).to_a.zip(("A".."Z").to_a).to_h
 STRING2BOOL = {'T'=> true, 'F'=> false}
@@ -11,12 +11,22 @@ class TruthTable
 
   attr_accessor(:variables)
 
-  def initialize(n_variables, variable_names=CAPITAL_ALPHA)
-
-    @n = n_variables
-    @variables = create_variable_array(@n, variable_names)
+  def initialize(variables, variable_names=CAPITAL_ALPHA)
+    @names = variable_names
+    if variables.is_a? Integer
+      @variables = create_empty_table_for_n variables
+    elsif variables.is_a? Array
+      @variables = variables
+    elsif variables.is_a? Hash
+      @variables = variables.values
+    end
     # puts @variables
     @tt = create_initial_hash(@variables)
+  end
+
+  def create_empty_table_for_n n_variables
+    @n = n_variables
+    @variables = create_variable_array(@n, @names)
   end
 
   def create_variable_array(n, names)
@@ -34,6 +44,16 @@ class TruthTable
   def add_wff wff
     if wff.is_unary?
       @tt[wff] = @tt[wff.atom1].map{|x| wff.eval x}
+    elsif wff.atom1.is_a? WFF and wff.atom2.is_a? WFF
+      add_wff(wff.atom1)
+      add_wff(wff.atom2)
+      @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
+    elsif wff.atom1.is_a? WFF
+      add_wff(wff.atom1)
+      @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
+    elsif wff.atom2.is_a? WFF
+      add_wff(wff.atom2)
+      @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
     else
       @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
     end
@@ -50,7 +70,32 @@ class TruthTable
     puts "\n"
     puts "—————\t\t" * @tt.keys.length
     0.upto(@tt.values[0].length - 1) do |row_index|
-      get_row(@tt, row_index).each{|x| print "#{x}\t\t"}
+      get_row(@tt, row_index).each{|x| print "#{x ? x.to_s.green : x.to_s.red}\t\t"}
+      print "\n"
+    end
+  end 
+
+  def print_wffs array_of_wffs_to_print, print_variables=true
+    if print_variables
+      array_of_wffs_to_print = @variables | array_of_wffs_to_print 
+      #puts array_of_wffs_to_print
+    end
+    array_of_wffs_to_print.each do |v|
+      begin
+        @tt[v]
+      rescue
+        raise ArgumentError
+      end
+      print "#{v.to_s}"; 
+      print "\t" * (2 - v.to_s.length / 7)
+    end
+    puts "\n"
+    
+    0.upto(@tt.values[0].length - 1) do |row_index|
+      array_of_wffs_to_print.each do |v|
+        value = @tt[v][row_index]
+        print "#{value ? value.to_s.green : value.to_s.red}\t\t"
+      end
       print "\n"
     end
   end
