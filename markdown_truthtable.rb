@@ -1,32 +1,42 @@
 require './TruthTable'
 require './Logic'
+require './LogicParser'
+require 'colorize'
+require 'optparse'
 
-tt = TruthTable.new(ARGV[0].to_i)
+options = {}
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: truthtable.rb [options] expression_string[s]"
+  opts.on("-a", "--all", "Print all WFFs") do |a|
+    options[:printall] = a
+  end
+  opts.on("-e", "--equiv", "Checks whether the two given expressions are equivalent") do |e|
+    options[:equivalent] = e
+  end
+end
+opt_parser.parse!
 
-a = tt.variables[0]
-b = tt.variables[1]
-disj = Or.new
-wff = WFF.new(a, disj, b)
-tt.add_wff(wff)
-tt.print_to_console
-neg = Not.new
-wff2 = WFF.new(wff, neg)
-tt.add_wff(wff2)
-tt.print_to_console
-#c = tt.variables[2]
-#conj = And.new
-#wff3 = WFF.new(wff2, conj, c)
-#tt.add_wff(wff3)
-tt.print_to_console
-cond = If.new
-wff4 = WFF.new(a, cond, b)
-tt.add_wff(wff4)
-tt.print_to_console
-wff5 = WFF.new(a, neg)
-tt.add_wff(wff5)
-wff6 = WFF.new(wff5, disj, b)
-tt.add_wff(wff6)
-tt.print_to_console
-puts tt.are_equivalent? wff6, wff4
-
-TruthTable.new(ARGV[0].to_i)
+if options[:equivalent]
+  var1, wff1 = parse_string(ARGV[0])
+  var2, wff2 = parse_string(ARGV[1], var1)
+#  puts var2
+#  puts wff1.inspect
+#  puts wff2.inspect
+  tt = TruthTable.new(var2)
+  tt.add_wff wff1
+  tt.add_wff wff2
+  options[:printall] ? tt.print_to_console : tt.print_wffs([wff1, wff2])
+  puts "Are #{wff1.to_s} and #{wff2.to_s} equivalent? #{(tt.are_equivalent? wff1, wff2) ? "Yes" : "No"}"
+else
+  wffs = []
+  vars = {}
+  ARGV.each do |formula|
+    vars, wff = parse_string(formula, vars)
+    wffs << wff
+  end
+  tt = TruthTable.new(vars)
+  wffs.each do |wff|
+    tt.add_wff wff
+  end
+  options[:printall] ? tt.print_to_console : tt.print_wffs(wffs)
+end
