@@ -42,12 +42,15 @@ class TruthTable
   # Adds a Well-Formed Formula to the table
   # WFFs are given in the format: [atom, connective, atom] where atom is either a variable or another wff
   def add_wff wff
-    if wff.is_unary?
+    if wff.is_a? Variable
+      return false
+    elsif wff.is_unary?
       if wff.atom1.is_a? WFF
         add_wff(wff.atom1)
       end
       @tt[wff] = @tt[wff.atom1].map{|x| wff.eval x}
     elsif wff.atom1.is_a? WFF and wff.atom2.is_a? WFF
+      add_wff(wff.atom1)
       add_wff(wff.atom2)
       @tt[wff] = @tt[wff.atom1].each_with_index.map{|x, idx| wff.eval(x, @tt[wff.atom2][idx])}
     elsif wff.atom1.is_a? WFF
@@ -89,10 +92,12 @@ class TruthTable
         raise ArgumentError
       end
       print "#{v.to_s}"; 
-      print "\t" * (2 - v.to_s.length / 7)
+      print "\t" * ([2 - v.to_s.length / 7, 0].max)
     end
     puts "\n"
     
+    puts "—————\t\t" * array_of_wffs_to_print.length
+
     0.upto(@tt.values[0].length - 1) do |row_index|
       array_of_wffs_to_print.each do |v|
         value = @tt[v][row_index]
