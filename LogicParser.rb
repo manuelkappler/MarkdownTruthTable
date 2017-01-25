@@ -6,8 +6,11 @@ require './TruthTable'
  
 # This code implements a shunting yard algorithm for parsing. See for example: www.engr.mun.ca/~theo/Misc/exp_parsing.htm and en.wikipedia.org/wiki/Shunting-yard-algorithm
  
-def parse_string string
-  variables = {}
+def parse_string string, variables={}, verbose=false
+  while /\(\S|\S\)/.match(string)
+    string = string.gsub(/\(([A-Z(]{1})/, "( \\1").gsub(/([A-Z)]{1})\)/, "\\1 )")
+  end
+  puts string
   operators = {"not" => Not.new(), "or" => Or.new(), "and" => And.new(), "->" => If.new(), "<->" => Iff.new(), "(" => LeftParen.new()}
   sentinel = Sentinel.new
   output_queue = OutputQueue.new()
