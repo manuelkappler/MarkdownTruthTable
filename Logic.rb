@@ -14,6 +14,7 @@ class Connective
   end
 
   def <=>(other_connective)
+    raise ArgumentError unless other_connective.is_a? Connective
     if self.precedence < other_connective.precedence
       return 1
     elsif self.precedence > other_connective.precedence
@@ -22,6 +23,12 @@ class Connective
       return 0
     end
   end
+end
+
+class UnaryConnective < Connective
+end
+
+class BinaryConnective < Connective
 end
 
 class Variable < Atom
@@ -83,7 +90,7 @@ class WFF < Atom
 
 end
 
-class And < Connective
+class And < BinaryConnective
   def initialize
     @precedence = 2
     @symbol = "∧"
@@ -98,7 +105,7 @@ class And < Connective
   end
 end
 
-class Or < Connective
+class Or < BinaryConnective
   def initialize
     @precedence = 3
     @symbol = "∨"
@@ -115,7 +122,7 @@ class Or < Connective
   end
 end
 
-class If < Connective
+class If < BinaryConnective
   def initialize
     @precedence = 4
     @symbol = "→"
@@ -134,7 +141,7 @@ class If < Connective
   end
 end
 
-class Iff < Connective
+class Iff < BinaryConnective
   def initialize
     @precedence = 5
     @symbol = "↔"
@@ -157,8 +164,6 @@ class Iff < Connective
   end
 end
 
-class UnaryConnective < Connective
-end
 
 class Not < UnaryConnective
   def initialize
@@ -176,8 +181,14 @@ class Not < UnaryConnective
 end
 
 # Dummy connective for parsing
-class Sentinel < Connective
+class Sentinel < UnaryConnective
   def initialize
     @precedence = 10
+  end
+end
+
+class LeftParen < UnaryConnective
+  def initialize
+    @precedence = 9
   end
 end
