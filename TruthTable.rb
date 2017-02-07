@@ -1,5 +1,6 @@
 require './Logic'
 require 'colorize'
+require 'terminal-table'
 
 CAPITAL_ALPHA = (1..26).to_a.zip(("A".."Z").to_a).to_h
 STRING2BOOL = {'T'=> true, 'F'=> false}
@@ -9,7 +10,7 @@ class TruthTable
 
   # Should be a hash-like structure that has the Atoms as keys and the truth values as value
 
-  attr_accessor(:variables)
+  attr_accessor(:variables, :tt)
 
   def initialize(variables, variable_names=CAPITAL_ALPHA)
     @names = variable_names
@@ -42,6 +43,7 @@ class TruthTable
   # Adds a Well-Formed Formula to the table
   # WFFs are given in the format: [atom, connective, atom] where atom is either a variable or another wff
   def add_wff wff
+    #return false if @tt.keys.any?{|k2| wff.to_s == k1.to_s} 
     if wff.is_a? Variable
       return false
     elsif wff.is_unary?
@@ -71,7 +73,7 @@ class TruthTable
   # Printing etc.
    
   def print_to_console
-    @tt.keys.each{|v| print "#{v.to_s}"; print "\t" * (2 - v.to_s.length / 7)}
+    @tt.keys.each{|v| print "#{v.to_s}"; print "\t" * ([2 - v.to_s.length / 7, 0].max)}
     puts "\n"
     puts "—————\t\t" * @tt.keys.length
     0.upto(@tt.values[0].length - 1) do |row_index|
@@ -79,6 +81,16 @@ class TruthTable
       print "\n"
     end
   end 
+
+  def print_with_terminaltable
+    head = @tt.keys.map{|k| k.to_s}
+    rows = []
+    0.upto(@tt.values[0].length - 1) do |row_index|
+      rows << get_row(@tt, row_index).map{|v| "#{v ? v.to_s.green : v.to_s.red}"}
+    end
+    output = Terminal::Table.new :headings => head, :rows => rows, :style => {:alignment => :left}
+    puts output
+  end
 
   def print_wffs array_of_wffs_to_print, print_variables=true
     if print_variables
@@ -105,6 +117,20 @@ class TruthTable
       end
       print "\n"
     end
+  end
+
+  def print_wffs_with_terminaltable array_of_wffs_to_print, print_variables=true
+    if print_variables
+      array_of_wffs_to_print = @variables | array_of_wffs_to_print 
+      #puts array_of_wffs_to_print
+    end
+    head = array_of_wffs_to_print.map{|v| v.to_s }
+    rows = []
+    0.upto(@tt.values[0].length - 1) do |row_index|
+      rows << array_of_wffs_to_print.map {|v| value = @tt[v][row_index]; "#{value ? value.to_s.green : value.to_s.red}"}
+    end
+    output = Terminal::Table.new :headings => head, :rows => rows, :style => {:alignment => :left}
+    puts output
   end
 
   def to_markdown

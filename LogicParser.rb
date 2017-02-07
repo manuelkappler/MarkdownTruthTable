@@ -7,17 +7,23 @@ require './TruthTable'
 # This code implements a shunting yard algorithm for parsing. See for example: www.engr.mun.ca/~theo/Misc/exp_parsing.htm and en.wikipedia.org/wiki/Shunting-yard-algorithm
  
 def parse_string string, variables={}, verbose=false
-  while /\(\S|\S\)/.match(string)
-    string = string.gsub(/\(([A-Z(]{1})/, "( \\1").gsub(/([A-Z)]{1})\)/, "\\1 )")
+  s = string.dup
+  recounter = 0
+  while /\(\S|\S\)/.match(s)
+    s.gsub!(/([()])([A-Zn(]{1})/, "\\1 \\2")
+    s.gsub!(/([A-Zt)]{1})([()])/, "\\1 \\2")
+    if (recounter += 1) >= 5
+      puts "Can't parse in less than 5 steps. Try entering the formula with spaces between parentheses"
+      raise ArgumentError
+    end
   end
-  puts string
   operators = {"not" => Not.new(), "or" => Or.new(), "and" => And.new(), "->" => If.new(), "<->" => Iff.new(), "(" => LeftParen.new()}
   sentinel = Sentinel.new
   output_queue = OutputQueue.new()
   operator_stack = [sentinel]
 #  wff_stack = []
 #  vars = []
-  elements = string.split
+  elements = s.split
   elements.each do |e|
     if ("A".."Z").include? e
       variables[e] = Variable.new(e) unless variables.has_key? e

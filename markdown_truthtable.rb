@@ -25,7 +25,7 @@ if options[:equivalent]
   tt = TruthTable.new(var2)
   tt.add_wff wff1
   tt.add_wff wff2
-  options[:printall] ? tt.print_to_console : tt.print_wffs([wff1, wff2])
+  options[:printall] ? tt.print_with_terminaltable : tt.print_wffs_with_terminaltable([wff1, wff2])
   puts "Are #{wff1.to_s} and #{wff2.to_s} equivalent? #{(tt.are_equivalent? wff1, wff2) ? "Yes" : "No"}"
 else
   wffs = []
@@ -38,5 +38,5 @@ else
   wffs.each do |wff|
     tt.add_wff wff
   end
-  options[:printall] ? tt.print_to_console : tt.print_wffs(wffs)
+  options[:printall] ? tt.print_with_terminaltable : tt.print_wffs_with_terminaltable(wffs)
 end
